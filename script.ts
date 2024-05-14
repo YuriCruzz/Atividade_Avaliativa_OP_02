@@ -7,13 +7,9 @@ class Item {
         this.descricao = d;
     }
 
-    aplicarBeneficios(){
-        
-    }
+    abstract aplicarBeneficios(pleyer: Personagem);
 
-    removerBeneficios(){
-        
-    }
+    abstract removerBeneficios(pleyer: Personagem);
 
     getNome(){
         return this.nome;
@@ -34,11 +30,26 @@ class ItemInventario{
 }
 
 class Arma extends Item {
+    aplicarBeneficios(pleyer: Personagem) {
+        pleyer.setForca(pleyer.getForca()+10);
+        pleyer.setDefesa(pleyer.getDefesa()+5);
+    }
+
+    removerBeneficios(pleyer: Personagem) {
+        pleyer.setForca(pleyer.getForca()-10);
+        pleyer.setDefesa(pleyer.getDefesa()-5);
+    }
 
 }
 
 class Pocao extends Item {
-    
+   aplicarBeneficios(player: Personagem) {
+       
+   }
+
+   removerBeneficios(pleyer: Personagem) {
+       
+   }
 }
 
 class Inventario {
@@ -86,8 +97,18 @@ class Personagem {
     private inventario: Inventario;
     private arma: Arma;
 
-    constructor(parameters) {
-        
+    private maxhp: number;
+    private maxmp: number;
+
+    constructor(n: string, hp: number, mp: number, f: number, d: number) {
+        this.nome = n;
+        this.hp = hp;
+        this.mp = mp;
+        this.forca = f;
+        this.defesa = d;
+
+        this.maxhp = hp;
+        this.maxmp = mp;
     }
 
     abrirIventario(){
@@ -102,5 +123,33 @@ class Personagem {
 
     usarItem(){
         
+    }
+
+    getArma(){
+        return this.arma;
+    }
+
+    getForca(){
+        return this.forca;
+    }
+
+    getDefesa(){
+        return this.defesa;
+    }
+
+    getMaxHP(){
+        return this.maxhp;
+    }
+
+    getMaxMP(){
+        return this.maxmp;
+    }
+
+    setForca(forca: number){
+        this.forca = forca;
+    }
+
+    setDefesa(defesa: number){
+        this.defesa = defesa;
     }
 }
