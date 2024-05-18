@@ -1,4 +1,4 @@
-class Item {
+abstract class Item {
     protected nome: string;
     protected descricao: string;
 
@@ -20,12 +20,21 @@ class ItemInventario{
     private quantidade: number;
     private item: Item;
 
+    constructor(item: Item, quant: number){
+        this.quantidade = quant;
+        this.item = item;
+    }
+
     getQuantidade(){
         return this.quantidade;
     }
 
     getItem(){
         return this.item;
+    }
+
+    setQuant(quant: number){
+        this.quantidade = quant;
     }
 }
 
@@ -44,47 +53,89 @@ class Arma extends Item {
 
 class Pocao extends Item {
    aplicarBeneficios(player: Personagem) {
-       
+       player.setHP(player.getHP()+(player.getMaxHP()*0.5))
+       player.setMP(player.getMP()+(player.getMaxMP()*0.2))
    }
 
-   removerBeneficios(pleyer: Personagem) {
-       
-   }
+   removerBeneficios(pleyer: Personagem) { }//Não usavel nesta class.
 }
 
 class Inventario {
-    private itemInventario: ItemInventario[] = [];
+    private itens: ItemInventario[] = [];
     private quantidadeMaxItens: number = 20;
 
-    adicionarItem(){
-
+    adicionarItem(item: Item, quantidade: number = 1){
+        if(this.itens.length >= this.quantidadeMaxItens){
+            throw new InventarioLimiteException('O iventario está cheio. É imposivel levar mais itens de 20!');
+        } 
+        const itemExistente = this.itens.findIndex((element) => element.getItem() === item);//N**
+        if(itemExistente !== -1){
+            this.itens[itemExistente].setQuant(quantidade);
+        }else{
+            this.itens.push(new ItemInventario(item, quantidade));
+        }
     }
 
     getItensIventario(){
-        return this.itemInventario;
+        return this.itens;
     }
 
     getMaxQuantidade(){
         return this.quantidadeMaxItens
     }
+
+    getTotalItens(): number {
+        return this.itens.reduce((total, item) => total + item.getQuantidade(), 0);
+    } //N**
+}
+
+class InventarioLimiteException extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "InventarioLimiteException";
+    }
 }
 
 class ItemMenu {
-    opcao: string;
-    textoOpcao: string;
+    private opcao: string;
+    private textoOpcao: string;
 
     constructor(indice: string, opao: string){
         this.opcao = indice;
         this.textoOpcao = opao;
     }
+
+    getOpcao(){
+        return this.opcao;
+    }
+    getTextoOpcao(){
+        return this.textoOpcao;
+    }
 }
 
 class Menu {
-    itens: ItemMenu[]=[];
+    private itens: ItemMenu[]=[];
 
     constructor(){
-        this.itens.push(new ItemMenu ("1", "Equipar Arma"))
-        this.itens.push(new ItemMenu ("2", "Tomar Poção"))
+        this.itens.push(new ItemMenu ("1", "Equipar Arma."))
+        this.itens.push(new ItemMenu ("2", "Tomar Poção."))
+        this.itens.push(new ItemMenu ("3", "Adicionar Arma ao Inventário."))
+        this.itens.push(new ItemMenu ("4", "Adicionar Poção ao Inventário."))
+        this.itens.push(new ItemMenu ("5", "Imprimir Info."))
+        this.itens.push(new ItemMenu ("6", "Desequipar Arma."))
+        this.itens.push(new ItemMenu ("0", "Sair."))
+    }
+
+    imprimirMenu(){
+        console.log("Escolha uma das opções abaixo:");
+        this.itens.forEach(item => {
+            console.log(`${item.getOpcao}. ${item.getTextoOpcao}`);
+            
+        })
+    }
+
+    getItensDeMenu(){
+        return this.itens;
     }
 }
 
@@ -118,7 +169,7 @@ class Personagem {
             console.log(`${i} - ${itemInventario.getItem().getNome()} (${itemInventario.getQuantidade})`);
             i++;
         }
-        console.log(`$/${this.inventario.getMaxQuantidade}`);
+        console.log(`${this.inventario.getTotalItens()}/${this.inventario.getMaxQuantidade}`);
     }
 
     usarItem(){
@@ -137,6 +188,14 @@ class Personagem {
         return this.defesa;
     }
 
+    getHP(){
+        return this.hp;
+    }
+
+    getMP(){
+        return this.mp;
+    }
+
     getMaxHP(){
         return this.maxhp;
     }
@@ -151,5 +210,12 @@ class Personagem {
 
     setDefesa(defesa: number){
         this.defesa = defesa;
+    }
+
+    setHP(hp: number){
+        this.hp = hp;
+    }
+    setMP(mp: number){
+        this.mp = mp;
     }
 }
