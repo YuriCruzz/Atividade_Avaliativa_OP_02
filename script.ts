@@ -25,11 +25,11 @@ class ItemInventario{
         this.item = item;
     }
 
-    getQuantidade(){
+    getQuantidade(): number{
         return this.quantidade;
     }
 
-    getItem(){
+    getItem(): Item{
         return this.item;
     }
 
@@ -53,8 +53,8 @@ class Arma extends Item {
 
 class Pocao extends Item {
    aplicarBeneficios(player: Personagem) {
-       player.setHP(player.getHP()+(player.getMaxHP()*0.5))
-       player.setMP(player.getMP()+(player.getMaxMP()*0.2))
+       player.setHP(player.getHP()+(player.getMaxHP()*0.5));
+       player.setMP(player.getMP()+(player.getMaxMP()*0.2));
    }
 
    removerBeneficios(pleyer: Personagem) { }//Não usavel nesta class.
@@ -76,11 +76,11 @@ class Inventario {
         }
     }
 
-    getItensIventario(){
+    getItensIventario(): ItemInventario[]{
         return this.itens;
     }
 
-    getMaxQuantidade(){
+    getMaxQuantidade(): number{
         return this.quantidadeMaxItens
     }
 
@@ -105,10 +105,10 @@ class ItemMenu {
         this.textoOpcao = opao;
     }
 
-    getOpcao(){
+    getOpcao(): string{
         return this.opcao;
     }
-    getTextoOpcao(){
+    getTextoOpcao(): string{
         return this.textoOpcao;
     }
 }
@@ -130,11 +130,15 @@ class Menu {
         console.log("Escolha uma das opções abaixo:");
         this.itens.forEach(item => {
             console.log(`${item.getOpcao}. ${item.getTextoOpcao}`);
-            
         })
+
+        let entrada = require('prompt-sync')();
+        let escolha = entrada('Selecione uma das Opções Exibido no Console:');
+
+        return escolha;
     }
 
-    getItensDeMenu(){
+    getItensDeMenu(): ItemMenu[]{
         return this.itens;
     }
 }
@@ -172,36 +176,70 @@ class Personagem {
         console.log(`${this.inventario.getTotalItens()}/${this.inventario.getMaxQuantidade}`);
     }
 
-    usarItem(){
-        
+    usarItem(item: Item){
+        if (item instanceof Arma) {
+            if (this.arma) {
+                this.arma.removerBeneficios(this);
+            }
+            this.arma = item;
+            this.arma.aplicarBeneficios(this);
+        } else if (item instanceof Pocao) {
+            item.aplicarBeneficios(this);
+
+            for (let i = 0; i < this.inventario.getItensIventario().length; i++) {
+                if (this.inventario.getItensIventario()[i].getItem().getNome() == item.getNome()) {
+                    this.inventario.getItensIventario()[i].setQuant(this.inventario.getItensIventario()[i].getQuantidade() - 1);
+                }
+            }
+        }
     }
 
-    getArma(){
+    desequiparArma() {
+        if (this.arma) {
+            this.arma.removerBeneficios(this);
+        } else {
+            console.log("O personagem não está equipado com uma arma.");
+        }
+    }
+
+    exibirPerssonagem(){
+        console.log(`Informações do Perssomagem:\n
+        HP: ${this.hp}\n
+        MP: ${this.mp}\n
+        Ataque: ${this.forca}\n
+        Defesa: ${this.defesa}\n
+        Arma: ${this.arma}`);
+    }
+
+    getArma(): Arma{
         return this.arma;
     }
 
-    getForca(){
+    getForca(): number{
         return this.forca;
     }
 
-    getDefesa(){
+    getDefesa(): number{
         return this.defesa;
     }
 
-    getHP(){
+    getHP(): number{
         return this.hp;
     }
 
-    getMP(){
+    getMP(): number{
         return this.mp;
     }
 
-    getMaxHP(){
+    getMaxHP(): number{
         return this.maxhp;
     }
 
-    getMaxMP(){
+    getMaxMP(): number{
         return this.maxmp;
+    }
+    getIventario(): Inventario{
+        return this.inventario;
     }
 
     setForca(forca: number){
@@ -217,5 +255,37 @@ class Personagem {
     }
     setMP(mp: number){
         this.mp = mp;
+    }
+}
+
+class Jogo {
+    private menu: Menu;
+    private perssonagem: Personagem;
+    private ivemtario: Inventario;
+
+    constructor(m: Menu, pp: Personagem) {
+        this.menu = m;
+        this.perssonagem = pp;
+    }
+
+    jogar(){
+        let opcao = this.menu.imprimirMenu();
+        do{
+            switch (opcao) {
+                case '1':
+                    console.log(this.perssonagem.getIventario());
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '0':
+                    console.log('Cessão Incerrada.');
+                    break;
+                default:
+                    console.log('Opção não valida.');
+            }
+
+        }while(this.perssonagem.getHP() > 0);
     }
 }
