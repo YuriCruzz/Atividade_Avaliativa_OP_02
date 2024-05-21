@@ -273,12 +273,18 @@ class Jogo {
         do{
             switch (opcao) {
                 case '1':
-                    console.log(this.perssonagem.getIventario());
+                    this.perssonagem.abrirIventario();
+                    break;
                 case '2':
                 case '3':
                 case '4':
                 case '5':
+                    this.perssonagem.exibirPerssonagem();
+                    break;
                 case '6':
+                    this.perssonagem.desequiparArma();
+                    console.log('Arma desequipada!');
+                    break;
                 case '0':
                     console.log('Cessão Incerrada.');
                     break;
