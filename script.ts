@@ -14,6 +14,10 @@ abstract class Item {
     getNome(){
         return this.nome;
     }
+
+    getDescricao(){
+        return this.descricao;
+    }
 }
 
 class ItemInventario{
@@ -133,7 +137,7 @@ class Menu {
         })
 
         let entrada = require('prompt-sync')();
-        let escolha = entrada('Selecione uma das Opções Exibido no Console:');
+        let escolha = entrada('Selecione uma das Opções Exibido no Console: ');
 
         return escolha;
     }
@@ -268,16 +272,83 @@ class Jogo {
         this.perssonagem = pp;
     }
 
+    listArmas(){
+        this.perssonagem.getIventario().getItensIventario().forEach(item => {
+            let i = 1;
+            if(item instanceof Arma){
+                console.log(`${i}. ${item}.`);
+                i++
+            }
+    });
+
+        let entrada = require('prompt-sync')();
+        let escolha = entrada('\nEscreva o nome da Arma a ser equipada: ');
+
+        this.perssonagem.getIventario().getItensIventario().forEach(itemInventario => {
+            if(itemInventario.getItem().getNome() === escolha){
+                this.perssonagem.usarItem(itemInventario.getItem())
+                console.log(`${escolha} foi equipado!`);
+            }
+        });
+    }
+
+    listPocao(){
+        this.perssonagem.getIventario().getItensIventario().forEach(item => {
+            let i = 1;
+            if(item instanceof Pocao){
+                console.log(`${i}. ${item}.`);
+                i++
+            }
+        });
+
+        let entrada = require('prompt-sync')();
+        let escolha = entrada('\nEscreva o nome da Poção a ser usada: ');
+
+        this.perssonagem.getIventario().getItensIventario().forEach(itemInventario => {
+            if(itemInventario.getItem().getNome() === escolha){
+                this.perssonagem.usarItem(itemInventario.getItem())
+                console.log(`${escolha} foi usada!`);
+            }
+        });
+    }
+
+    addArma(){
+        let entrada = require('prompt-sync')();
+        let nomeArma = entrada('\nEscreva o nome da Arma: ');
+        let descArma = entrada('\nEscreva a descrição da Arma: ');
+
+        let arma = new Arma(nomeArma, descArma);
+        let itemIventario = new ItemInventario(arma, 1);
+
+        this.perssonagem.getIventario().getItensIventario().push(itemIventario);
+    }
+    addPocao(){
+        let entrada = require('prompt-sync')();
+        let nomePocao = entrada('\nEscreva o nome da Poção: ');
+        let descPocao = entrada('\nEscreva a descrição da Poção: ');
+
+        let pocao = new Pocao(nomePocao, descPocao);
+        let itemIventario = new ItemInventario(pocao, 1);
+
+        this.perssonagem.getIventario().getItensIventario().push(itemIventario);
+    }
+
     jogar(){
         let opcao = this.menu.imprimirMenu();
         do{
             switch (opcao) {
                 case '1':
-                    this.perssonagem.abrirIventario();
+                    this.listArmas();
                     break;
                 case '2':
+                    this.listPocao();
+                    break;
                 case '3':
+                    this.addArma();
+                    break;
                 case '4':
+                    this.addPocao
+                    break;
                 case '5':
                     this.perssonagem.exibirPerssonagem();
                     break;
