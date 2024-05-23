@@ -21,6 +21,9 @@ var Item = /** @class */ (function () {
     Item.prototype.getNome = function () {
         return this.nome;
     };
+    Item.prototype.getDescricao = function () {
+        return this.descricao;
+    };
     return Item;
 }());
 var ItemInventario = /** @class */ (function () {
@@ -119,7 +122,6 @@ var ItemMenu = /** @class */ (function () {
 }());
 var Menu = /** @class */ (function () {
     function Menu() {
-        this.itens = [];
         this.itens.push(new ItemMenu("1", "Equipar Arma."));
         this.itens.push(new ItemMenu("2", "Tomar Poção."));
         this.itens.push(new ItemMenu("3", "Adicionar Arma ao Inventário."));
@@ -133,6 +135,9 @@ var Menu = /** @class */ (function () {
         this.itens.forEach(function (item) {
             console.log("".concat(item.getOpcao, ". ").concat(item.getTextoOpcao));
         });
+        var entrada = require('prompt-sync')();
+        var escolha = entrada('Selecione uma das Opções Exibido no Console: ');
+        return escolha;
     };
     Menu.prototype.getItensDeMenu = function () {
         return this.itens;
@@ -140,12 +145,14 @@ var Menu = /** @class */ (function () {
     return Menu;
 }());
 var Personagem = /** @class */ (function () {
-    function Personagem(n, hp, mp, f, d) {
+    function Personagem(n, hp, mp, f, d, inventario, arma) {
         this.nome = n;
         this.hp = hp;
         this.mp = mp;
         this.forca = f;
         this.defesa = d;
+        this.inventario = inventario;
+        this.arma = arma;
         this.maxhp = hp;
         this.maxmp = mp;
     }
@@ -159,7 +166,33 @@ var Personagem = /** @class */ (function () {
         }
         console.log("".concat(this.inventario.getTotalItens(), "/").concat(this.inventario.getMaxQuantidade));
     };
-    Personagem.prototype.usarItem = function () {
+    Personagem.prototype.usarItem = function (item) {
+        if (item instanceof Arma) {
+            if (this.arma) {
+                this.arma.removerBeneficios(this);
+            }
+            this.arma = item;
+            this.arma.aplicarBeneficios(this);
+        }
+        else if (item instanceof Pocao) {
+            item.aplicarBeneficios(this);
+            for (var i = 0; i < this.inventario.getItensIventario().length; i++) {
+                if (this.inventario.getItensIventario()[i].getItem().getNome() == item.getNome()) {
+                    this.inventario.getItensIventario()[i].setQuant(this.inventario.getItensIventario()[i].getQuantidade() - 1);
+                }
+            }
+        }
+    };
+    Personagem.prototype.desequiparArma = function () {
+        if (this.arma) {
+            this.arma.removerBeneficios(this);
+        }
+        else {
+            console.log("O personagem não está equipado com uma arma.");
+        }
+    };
+    Personagem.prototype.exibirPerssonagem = function () {
+        console.log("Informa\u00E7\u00F5es do Perssomagem:\n\n        HP: ".concat(this.hp, "\n\n        MP: ").concat(this.mp, "\n\n        Ataque: ").concat(this.forca, "\n\n        Defesa: ").concat(this.defesa, "\n\n        Arma: ").concat(this.arma));
     };
     Personagem.prototype.getArma = function () {
         return this.arma;
@@ -182,6 +215,9 @@ var Personagem = /** @class */ (function () {
     Personagem.prototype.getMaxMP = function () {
         return this.maxmp;
     };
+    Personagem.prototype.getIventario = function () {
+        return this.inventario;
+    };
     Personagem.prototype.setForca = function (forca) {
         this.forca = forca;
     };
@@ -196,3 +232,95 @@ var Personagem = /** @class */ (function () {
     };
     return Personagem;
 }());
+var Jogo = /** @class */ (function () {
+    function Jogo() {
+        this.menu = new Menu();
+        this.perssonagem = new Personagem('Silas', 200, 500, 400, 150, new Inventario(), new Arma('Orbe do Infinito', 'Uma esfera translúcida, qual possui a representação do espo o preenchendo.'));
+    }
+    Jogo.prototype.listArmas = function () {
+        var _this = this;
+        this.perssonagem.getIventario().getItensIventario().forEach(function (item) {
+            var i = 1;
+            if (item instanceof Arma) {
+                console.log("".concat(i, ". ").concat(item, "."));
+                i++;
+            }
+        });
+        var entrada = require('prompt-sync')();
+        var escolha = entrada('\nEscreva o nome da Arma a ser equipada: ');
+        this.perssonagem.getIventario().getItensIventario().forEach(function (itemInventario) {
+            if (itemInventario.getItem().getNome() === escolha) {
+                _this.perssonagem.usarItem(itemInventario.getItem());
+                console.log("".concat(escolha, " foi equipado!"));
+            }
+        });
+    };
+    Jogo.prototype.listPocao = function () {
+        var _this = this;
+        this.perssonagem.getIventario().getItensIventario().forEach(function (item) {
+            var i = 1;
+            if (item instanceof Pocao) {
+                console.log("".concat(i, ". ").concat(item, "."));
+                i++;
+            }
+        });
+        var entrada = require('prompt-sync')();
+        var escolha = entrada('\nEscreva o nome da Poção a ser usada: ');
+        this.perssonagem.getIventario().getItensIventario().forEach(function (itemInventario) {
+            if (itemInventario.getItem().getNome() === escolha) {
+                _this.perssonagem.usarItem(itemInventario.getItem());
+                console.log("".concat(escolha, " foi usada!"));
+            }
+        });
+    };
+    Jogo.prototype.addArma = function () {
+        var entrada = require('prompt-sync')();
+        var nomeArma = entrada('\nEscreva o nome da Arma: ');
+        var descArma = entrada('\nEscreva a descrição da Arma: ');
+        var arma = new Arma(nomeArma, descArma);
+        var itemIventario = new ItemInventario(arma, 1);
+        this.perssonagem.getIventario().getItensIventario().push(itemIventario);
+    };
+    Jogo.prototype.addPocao = function () {
+        var entrada = require('prompt-sync')();
+        var nomePocao = entrada('\nEscreva o nome da Poção: ');
+        var descPocao = entrada('\nEscreva a descrição da Poção: ');
+        var pocao = new Pocao(nomePocao, descPocao);
+        var itemIventario = new ItemInventario(pocao, 1);
+        this.perssonagem.getIventario().getItensIventario().push(itemIventario);
+    };
+    Jogo.prototype.jogar = function () {
+        var opcao = this.menu.imprimirMenu();
+        do {
+            switch (opcao) {
+                case '1':
+                    this.listArmas();
+                    break;
+                case '2':
+                    this.listPocao();
+                    break;
+                case '3':
+                    this.addArma();
+                    break;
+                case '4':
+                    this.addPocao;
+                    break;
+                case '5':
+                    this.perssonagem.exibirPerssonagem();
+                    break;
+                case '6':
+                    this.perssonagem.desequiparArma();
+                    console.log('Arma desequipada!');
+                    break;
+                case '0':
+                    console.log('Cessão Incerrada.');
+                    break;
+                default:
+                    console.log('Opção não valida.');
+            }
+        } while (this.perssonagem.getHP() > 0);
+    };
+    return Jogo;
+}());
+var jogo = new Jogo();
+jogo.jogar();

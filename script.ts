@@ -159,12 +159,15 @@ class Personagem {
     private maxhp: number;
     private maxmp: number;
 
-    constructor(n: string, hp: number, mp: number, f: number, d: number) {
+    constructor(n: string, hp: number, mp: number, f: number, d: number, inventario: Inventario, arma: Arma) {
         this.nome = n;
         this.hp = hp;
         this.mp = mp;
         this.forca = f;
         this.defesa = d;
+        this.inventario = inventario;
+        this.arma = arma;
+        
 
         this.maxhp = hp;
         this.maxmp = mp;
@@ -265,11 +268,10 @@ class Personagem {
 class Jogo {
     private menu: Menu;
     private perssonagem: Personagem;
-    private ivemtario: Inventario;
 
-    constructor(m: Menu, pp: Personagem) {
-        this.menu = m;
-        this.perssonagem = pp;
+    constructor() {
+        this.menu = new Menu();
+        this.perssonagem = new Personagem('Silas', 200, 500, 400, 150, new Inventario(), new Arma('Orbe do Infinito', 'Uma esfera translúcida, qual possui a representação do espo o preenchendo.'));
     }
 
     listArmas(){
@@ -366,3 +368,6 @@ class Jogo {
         }while(this.perssonagem.getHP() > 0);
     }
 }
+
+let jogo = new Jogo();
+jogo.jogar();
